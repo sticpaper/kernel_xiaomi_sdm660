@@ -131,3 +131,12 @@ config SECURITY_SELINUX_POLICYDB_VERSION_MAX_VALUE
 	  installed under /etc/selinux/$SELINUXTYPE/policy, where
 	  SELINUXTYPE is defined in your /etc/selinux/config.
 
+config SECURITY_FORGERY_SELINUX
+	bool "Use fake SELinux policy group"
+	depends on SECURITY_SELINUX
+	default n
+	help
+	  After enabling, no matter how you enable it, it will be SElinux in permissive mode.
+
+	  If you are unsure how to answer this question, answer N.
+

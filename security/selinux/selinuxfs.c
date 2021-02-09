@@ -128,13 +128,23 @@ static unsigned long sel_last_ino = SEL_INO_NEXT - 1;
 #define SEL_INO_MASK			0x00ffffff
 
 #define TMPBUFLEN	12
+
+#ifdef CONFIG_SECURITY_FORGERY_SELINUX
+static int no_enforcing;
+#endif
+
 static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
 				size_t count, loff_t *ppos)
 {
 	char tmpbuf[TMPBUFLEN];
 	ssize_t length;
 
+#ifdef CONFIG_SECURITY_FORGERY_SELINUX
+	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", no_enforcing);
+#else
 	length = scnprintf(tmpbuf, TMPBUFLEN, "%d", selinux_enforcing);
+#endif
+
 	return simple_read_from_buffer(buf, count, ppos, tmpbuf, length);
 }
 
@@ -169,6 +179,13 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	if (sscanf(page, "%d", &new_value) != 1)
 		goto out;
 
+#ifdef CONFIG_SECURITY_FORGERY_SELINUX
+        no_enforcing = new_value;
+
+	selinux_enforcing = 0;
+	selnl_notify_setenforce(selinux_enforcing);
+	selinux_status_update_setenforce(selinux_enforcing);
+#else
 	if (new_value != selinux_enforcing) {
 		length = task_has_security(current, SECURITY__SETENFORCE);
 		if (length)
@@ -184,6 +201,8 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 		selnl_notify_setenforce(selinux_enforcing);
 		selinux_status_update_setenforce(selinux_enforcing);
 	}
+#endif
+
 	length = count;
 out:
 	free_page((unsigned long) page);
