@@ -18,7 +18,6 @@
 *.so
 *.so.dbg
 *.mod.c
-*.i
 *.lst
 *.symtypes
 *.order
@@ -116,6 +115,11 @@ all.config
 
 # fetched Android config fragments
 android/configs/android-*.cfg
+
+# out-kernel
+out
+server-build.sh
+phone_build.sh
 
 #
 #Ignoring Android.bp link file
